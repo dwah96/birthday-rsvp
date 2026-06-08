@@ -1,0 +1,6 @@
+{
+  "name": "Sam's Birthday Invitation",
+  "description": "Elegant birthday invitation and RSVP page for Sam's birthday at Barcode Xinyi, Taipei, with full integration to Google Sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Download, X, Loader2, ImagePlay } from "lucide-react";
+import { Download, X, Loader2, ImagePlay, Share2 } from "lucide-react";
 import { GIFEncoder, quantize, applyPalette } from "gifenc";
+
+type CropConfig = {
+  mode: "cover" | "fit";
+  zoom: number;
+  offsetX: number;
+  offsetY: number;
+};
 
 function getCropPlacement(
   imgW: number,
   imgH: number,
   targetW: number,
   targetH: number,
-  config: {
-    mode: "cover" | "fit";
-    zoom: number;
-    offsetX: number;
-    offsetY: number;
-  },
+  config: CropConfig,
 ) {
   let scale =
     config.mode === "cover"
@@ -31,6 +33,30 @@ function getCropPlacement(
   return { x, y, drawW, drawH };
 }
 
+function clampCropConfig(
+  imgW: number,
+  imgH: number,
+  targetW: number,
+  targetH: number,
+  config: CropConfig,
+): CropConfig {
+  const zoom = Math.max(0.5, Math.min(3, config.zoom));
+  const placement = getCropPlacement(imgW, imgH, targetW, targetH, {
+    ...config,
+    zoom,
+  });
+
+  const maxOffsetX = Math.max(0, (placement.drawW - targetW) / (2 * targetW));
+  const maxOffsetY = Math.max(0, (placement.drawH - targetH) / (2 * targetH));
+
+  return {
+    ...config,
+    zoom,
+    offsetX: Math.max(-maxOffsetX, Math.min(maxOffsetX, config.offsetX)),
+    offsetY: Math.max(-maxOffsetY, Math.min(maxOffsetY, config.offsetY)),
+  };
+}
+
 export default function InvitationGenerator() {
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -41,7 +67,7 @@ export default function InvitationGenerator() {
   const [customImage, setCustomImage] = useState<string | null>(null);
   const [imageSize, setImageSize] = useState({ w: 1, h: 1 });
   const [cropConfig, setCropConfig] = useState({
-    mode: "fit" as "cover" | "fit",
+    mode: "cover" as "cover" | "fit",
     zoom: 1,
     offsetX: 0,
     offsetY: 0,
@@ -56,37 +82,26 @@ export default function InvitationGenerator() {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = React.useRef({ x: 0, y: 0, offX: 0, offY: 0 });
   const previewRef = React.useRef<HTMLDivElement>(null);
-  const cropConfigRef = React.useRef(cropConfig);
+  const cropConfigRef = React.useRef<CropConfig>(cropConfig);
 
   const activePointersRef = React.useRef(new Map<number, { x: number; y: number }>());
-  const initialPinchRef = React.useRef({ distance: 0, zoom: 1, centerX: 0, centerY: 0, offX: 0, offY: 0 });
+  const initialPinchRef = React.useRef({ distance: 0, zoom: 1 });
 
   useEffect(() => {
     cropConfigRef.current = cropConfig;
   }, [cropConfig]);
 
-  useEffect(() => {
-    const node = previewRef.current;
-    if (!node) return;
+  const getPreviewTargetSize = () => ({
+    width: previewRef.current?.clientWidth || 315,
+    height: previewRef.current?.clientHeight || 308,
+  });
 
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const delta = e.deltaY * -0.002;
-      updateCropConfig((c: any) => ({
-        ...c,
-        zoom: Math.max(0.5, Math.min(3, c.zoom * (1 + delta))),
-      }));
-    };
-
-    node.addEventListener("wheel", handleWheel, { passive: false });
-
-    return () => {
-      node.removeEventListener("wheel", handleWheel);
-    };
-  }, []);
-
-  const updateCropConfig = (updater: any) => {
-    setCropConfig(updater);
+  const updateCropConfig = (updater: CropConfig | ((current: CropConfig) => CropConfig)) => {
+    setCropConfig((current) => {
+      const next = typeof updater === "function" ? updater(current) : updater;
+      const { width, height } = getPreviewTargetSize();
+      return clampCropConfig(imageSize.w, imageSize.h, width, height, next);
+    });
     setGeneratedResult(null);
   };
 
@@ -97,7 +112,11 @@ export default function InvitationGenerator() {
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    if (!customImage) return;
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
     activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     const pointers = Array.from(activePointersRef.current.values()) as { x: number; y: number }[];
@@ -116,15 +135,13 @@ export default function InvitationGenerator() {
       initialPinchRef.current = {
         distance: dist,
         zoom: cropConfigRef.current.zoom,
-        centerX: (pointers[0].x + pointers[1].x) / 2,
-        centerY: (pointers[0].y + pointers[1].y) / 2,
-        offX: cropConfigRef.current.offsetX,
-        offY: cropConfigRef.current.offsetY,
       };
     }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    e.preventDefault();
+    if (!customImage) return;
     if (!activePointersRef.current.has(e.pointerId)) return;
     activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
@@ -140,22 +157,11 @@ export default function InvitationGenerator() {
       let normDx = dx / containerW;
       let normDy = dy / containerH;
 
-      updateCropConfig((c: any) => {
-        let newOffX = dragStartRef.current.offX + normDx;
-        let newOffY = dragStartRef.current.offY + normDy;
-
-        const MAX_OFFSET = 1.5;
-        if (newOffX > MAX_OFFSET) newOffX = MAX_OFFSET;
-        if (newOffX < -MAX_OFFSET) newOffX = -MAX_OFFSET;
-        if (newOffY > MAX_OFFSET) newOffY = MAX_OFFSET;
-        if (newOffY < -MAX_OFFSET) newOffY = -MAX_OFFSET;
-
-        return {
-          ...c,
-          offsetX: newOffX,
-          offsetY: newOffY,
-        };
-      });
+      updateCropConfig((c) => ({
+        ...c,
+        offsetX: dragStartRef.current.offX + normDx,
+        offsetY: dragStartRef.current.offY + normDy,
+      }));
     } else if (pointers.length === 2) {
       const dist = calculateDistance(pointers[0], pointers[1]);
       if (initialPinchRef.current.distance > 0) {
@@ -163,7 +169,7 @@ export default function InvitationGenerator() {
         let newZoom = initialPinchRef.current.zoom * scale;
         newZoom = Math.max(0.5, Math.min(3, newZoom));
 
-        updateCropConfig((c: any) => ({
+        updateCropConfig((c) => ({
           ...c,
           zoom: newZoom,
         }));
@@ -196,10 +202,20 @@ export default function InvitationGenerator() {
     }
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!customImage) return;
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+    updateCropConfig((c) => ({
+      ...c,
+      zoom: c.zoom * zoomFactor,
+    }));
+  };
+
   const currentImageSrc = customImage;
 
-  const previewTargetW = 315;
-  const previewTargetH = 560 * 0.55; // 308
+  const previewTargetW = previewRef.current?.clientWidth || 315;
+  const previewTargetH = previewRef.current?.clientHeight || 560 * 0.55; // 308
   const preCrop = getCropPlacement(
     imageSize.w,
     imageSize.h,
@@ -233,8 +249,33 @@ export default function InvitationGenerator() {
       const url = URL.createObjectURL(file);
       setCustomImage(url);
       setGeneratedResult(null);
-      setCropConfig({ mode: "fit", zoom: 1, offsetX: 0, offsetY: 0 });
+      setCropConfig({ mode: "cover", zoom: 1, offsetX: 0, offsetY: 0 });
     }
+  };
+
+  const handleShareOrSave = async () => {
+    if (!generatedResult) return;
+
+    const shareData = {
+      files: [generatedResult.file],
+      title: "Sam's Invitation",
+      text: "Save this invite to Photos, then share it to Instagram.",
+    };
+
+    try {
+      if (navigator.canShare?.(shareData) && navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+    } catch (err: any) {
+      if (err?.name === "AbortError") return;
+      console.error("Share failed", err);
+    }
+
+    window.open(generatedResult.url, "_blank", "noopener,noreferrer");
+    setDownloadMessage(
+      "If the image opens in a new tab, long press it and choose Save Image / Save to Photos.",
+    );
   };
 
   const handleGenerateGif = async () => {
@@ -410,7 +451,7 @@ export default function InvitationGenerator() {
       const url = URL.createObjectURL(blob);
       
       setGeneratedResult({ url, file, type: "gif" });
-      setDownloadMessage("Your GIF is ready! Choose an option below to save it.");
+      setDownloadMessage("Your GIF is ready. On mobile, tap Share / Save to Photos.");
       setIsGeneratingGif(false);
     } catch (err) {
       console.error("Failed to generate GIF", err);
@@ -561,7 +602,7 @@ export default function InvitationGenerator() {
         const url = URL.createObjectURL(blob);
         
         setGeneratedResult({ url, file, type: "png" });
-        setDownloadMessage("Your PNG is ready! Choose an option below to save it.");
+        setDownloadMessage("Your PNG is ready. On mobile, tap Share / Save to Photos.");
         setIsGenerating(false);
       }, "image/png");
     } catch (err) {
@@ -630,7 +671,7 @@ export default function InvitationGenerator() {
                     </p>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => updateCropConfig((c: any) => ({ ...c, zoom: Math.max(0.5, c.zoom - 0.1) }))}
+                        onClick={() => updateCropConfig((c) => ({ ...c, zoom: c.zoom - 0.1 }))}
                         className="w-7 h-7 flex items-center justify-center bg-[#FAF5EE] border border-[#C5A16F]/20 rounded-full text-[#5C5446] hover:bg-[#F2ECD9] transition text-base leading-none active:scale-95"
                       >
                         -
@@ -638,7 +679,7 @@ export default function InvitationGenerator() {
                       <button
                         onClick={() =>
                           updateCropConfig({
-                            mode: "fit",
+                            mode: "cover",
                             zoom: 1,
                             offsetX: 0,
                             offsetY: 0,
@@ -649,7 +690,7 @@ export default function InvitationGenerator() {
                         Reset Photo
                       </button>
                       <button
-                        onClick={() => updateCropConfig((c: any) => ({ ...c, zoom: Math.min(3, c.zoom + 0.1) }))}
+                        onClick={() => updateCropConfig((c) => ({ ...c, zoom: c.zoom + 0.1 }))}
                         className="w-7 h-7 flex items-center justify-center bg-[#FAF5EE] border border-[#C5A16F]/20 rounded-full text-[#5C5446] hover:bg-[#F2ECD9] transition text-base leading-none active:scale-95"
                       >
                         +
@@ -663,7 +704,18 @@ export default function InvitationGenerator() {
               <div className="flex-1 w-full flex justify-center items-center overflow-hidden min-h-0 bg-[#FAF5EE] rounded-2xl relative mb-4">
                 <div
                   className="w-[315px] h-[560px] bg-[#FAF5EE] relative flex flex-col text-center overflow-hidden shrink-0 origin-center"
-                  style={{ transform: "scale(1)" }} // scaled for preview
+                  style={{
+                    transform: "scale(1)",
+                    touchAction: customImage ? "none" : "auto",
+                    userSelect: "none",
+                    cursor: customImage ? (isDragging ? "grabbing" : "grab") : "default",
+                  }}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={handlePointerUp}
+                  onPointerLeave={handlePointerUp}
+                  onWheel={handleWheel}
                 >
                   {/* Decorative Borders */}
                   <div className="absolute inset-3 border border-[#C5A16F] opacity-30 z-20 pointer-events-none"></div>
@@ -681,13 +733,8 @@ export default function InvitationGenerator() {
                         backgroundColor: "#FAF5EE",
                         touchAction: "none",
                         userSelect: "none",
-                        cursor: isDragging ? "grabbing" : "grab",
+                        pointerEvents: "none",
                       }}
-                      onPointerDown={handlePointerDown}
-                      onPointerMove={handlePointerMove}
-                      onPointerUp={handlePointerUp}
-                      onPointerCancel={handlePointerUp}
-                      onPointerLeave={handlePointerUp}
                     >
                       <img
                         src={currentImageSrc}
@@ -769,30 +816,20 @@ export default function InvitationGenerator() {
               <div className="flex flex-col gap-3 w-full mt-2">
                 {generatedResult ? (
                   <div className="flex flex-col gap-3 w-full">
-                    {navigator.canShare && navigator.canShare({ files: [generatedResult.file] }) && (
-                      <button
-                        onClick={() => {
-                          navigator
-                            .share({
-                              files: [generatedResult.file],
-                              title: "Sam's Invitation",
-                            })
-                            .catch((err) => {
-                              if (err.name !== "AbortError") console.error(err);
-                            });
-                        }}
-                        className="w-full bg-[#C5A16F] text-white rounded-2xl py-3.5 font-bold tracking-widest uppercase text-xs shadow-sm hover:bg-[#b08d5b] transition"
-                      >
-                        Share / Send {generatedResult.type.toUpperCase()}
-                      </button>
-                    )}
+                    <button
+                      onClick={handleShareOrSave}
+                      className="w-full bg-[#C5A16F] text-white rounded-2xl py-3.5 font-bold tracking-widest uppercase text-xs shadow-sm hover:bg-[#b08d5b] transition flex items-center justify-center gap-2"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Share / Save to Photos
+                    </button>
                     <a
                       href={generatedResult.url}
                       download={generatedResult.file.name}
                       className="w-full bg-[#1E1B15] text-[#FAF5EE] rounded-2xl py-3.5 font-bold tracking-widest uppercase text-xs text-center flex items-center justify-center gap-2 hover:bg-neutral-800 transition shadow-sm"
                     >
                       <Download className="w-4 h-4" />
-                      Save {generatedResult.type.toUpperCase()} to Device
+                      Download {generatedResult.type.toUpperCase()}
                     </a>
                     <button
                       onClick={() => setGeneratedResult(null)}
@@ -803,6 +840,7 @@ export default function InvitationGenerator() {
                     <div className="mt-1 text-center px-4 py-3 bg-[#E5DFC9]/20 rounded-xl border border-[#C5A16F]/10">
                       <p className="text-[11px] text-[#5C5446] leading-relaxed">
                         If saving opens a new tab, long press the image to save.
+                        On iPhone, choose Save Image / Save to Photos from the share menu.
                       </p>
                     </div>
                   </div>

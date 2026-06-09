@@ -44,6 +44,10 @@ export default function App() {
     }
   }, [malePlusOnes]);
 
+  const handlePhoneChange = (value: string) => {
+    setPhone(value.replace(/\D/g, "").slice(0, 10));
+  };
+
   // Handle RSVP Submit
   const handleRsvpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,19 +62,25 @@ export default function App() {
     }
 
     if (!name.trim()) {
-      setErrorMessage("Please enter your name.");
+      setErrorMessage("請輸入姓名。");
       setIsSubmitting(false);
       return;
     }
 
     if (!instagram.trim()) {
-      setErrorMessage("Please enter your Instagram account.");
+      setErrorMessage("請輸入 Instagram 帳號。");
       setIsSubmitting(false);
       return;
     }
 
     if (!gender) {
-      setErrorMessage("Please select your gender.");
+      setErrorMessage("請選擇性別。");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (phone && phone.length !== 10) {
+      setErrorMessage("手機號碼需為 10 位數字。");
       setIsSubmitting(false);
       return;
     }
@@ -80,7 +90,7 @@ export default function App() {
       RSVP_CONFIG.appsScriptUrl === "PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE"
     ) {
       setErrorMessage(
-        "System configuration error: Database URL is missing. Please contact the host.",
+        "系統設定錯誤：資料庫連線網址遺失，請聯絡主辦人。",
       );
       setIsSubmitting(false);
       return;
@@ -89,7 +99,7 @@ export default function App() {
     const needsSplitAgreement = malePlusOnes > 0;
     if (needsSplitAgreement && !agreedToDisclaimer && status === "yes") {
       setErrorMessage(
-        "Please signify your agreement to the bill split policy.",
+        "如果有男性同行朋友，請先確認費用分攤提醒。",
       );
       setIsSubmitting(false);
       return;
@@ -100,7 +110,7 @@ export default function App() {
         timestamp: new Date().toISOString(),
         guestName: name.trim().slice(0, 100),
         instagram: instagram.trim().slice(0, 150),
-        phone: phone.trim().slice(0, 50),
+        phone,
         gender,
         attendingStatus: status,
         femalePlusOnes,
@@ -153,16 +163,16 @@ export default function App() {
         setErrorMessage(
           result?.message ||
             result?.error ||
-            "Submission failed. Please try again.",
+            "送出失敗，請再試一次。",
         );
       }
     } catch (error: any) {
       console.error("Submission error:", error);
       if (error.name === "AbortError") {
-        setErrorMessage("RSVP submission timed out. Please try again.");
+        setErrorMessage("送出逾時，請再試一次。");
       } else {
         setErrorMessage(
-          "Network error occurred. Please ensure your connection is active and try again.",
+          "網路連線發生問題，請確認連線後再試一次。",
         );
       }
     } finally {
@@ -218,30 +228,27 @@ export default function App() {
 
                 {/* YOU ARE INVITED Badge */}
                 <div className="uppercase tracking-widest text-[10px] text-[#C5A16F] font-sans font-semibold border border-[#C5A16F]/30 px-3.5 py-1.5 rounded-full w-fit bg-[#FAF5EE]/60 backdrop-blur-xs">
-                  You Are Invited
+                  誠摯邀請
                 </div>
 
                 {/* Header Title Typography Pairings */}
                 <div className="relative">
                   <h1 className="font-serif text-[60px] sm:text-[76px] xl:text-[84px] leading-[1.05] text-[#1E1B15] tracking-tight font-light">
-                    Sam's
+                    Sam 的
                     <m.span
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.8, delay: 0.4 }}
                       className="font-serif font-normal text-[#C5A16F] tracking-tight block ml-1 md:ml-3 mt-1 text-[40px] sm:text-[56px] xl:text-[60px]"
                     >
-                      22歲的10週年紀念日
+                      22 歲的 10 週年紀念日
                     </m.span>
                   </h1>
                 </div>
 
                 {/* Event Sub-paragraph description */}
                 <p className="font-sans text-[#5C5446] text-sm sm:text-base md:text-md leading-relaxed max-w-md font-light">
-                  Join us for an exclusive, premier evening to celebrate Sam's
-                  22歲的10週年紀念日 at Barcode. Expect great music, premium
-                  drinks, and wonderful company. Let's make it a memorable
-                  night.
+                  邀請你一起來 Barcode，為 Sam 慶祝這個特別的夜晚。準備好音樂、好酒與好朋友，一起留下難忘回憶。
                 </p>
 
                 <div className="h-[1px] w-full bg-[#C5A16F]/25" />
@@ -255,13 +262,13 @@ export default function App() {
                     </div>
                     <div>
                       <h4 className="font-serif text-sm text-[#5C5446] tracking-wide uppercase font-semibold text-[10.5px]">
-                        Date & Time
+                        日期與時間
                       </h4>
                       <p className="text-[#1E1B15] font-medium mt-0.5">
-                        Friday, July 17
+                        7 月 17 日（星期五）
                       </p>
                       <p className="text-[#5C5446] text-xs font-light font-mono mt-0.5">
-                        Starting at 11:00 PM
+                        晚上 11:00 開始
                       </p>
                     </div>
                   </div>
@@ -273,14 +280,13 @@ export default function App() {
                     </div>
                     <div>
                       <h4 className="font-serif text-sm text-[#5C5446] tracking-wide uppercase font-semibold text-[10.5px]">
-                        Venue Location
+                        地點
                       </h4>
                       <p className="text-[#1E1B15] font-medium mt-0.5">
-                        Barcode Taipei · Xinyi
+                        Barcode Taipei・信義
                       </p>
                       <p className="text-[#5C5446] text-xs font-light mt-0.5">
-                        5F, No. 22, Songshou Road, Xinyi District, Taipei City,
-                        Taiwan
+                        台北市信義區松壽路 22 號 5 樓
                       </p>
                     </div>
                   </div>
@@ -294,15 +300,13 @@ export default function App() {
                   <div className="flex items-center gap-2 text-[#917646]">
                     <ShieldAlert className="w-4 h-4 text-[#C5A16F]" />
                     <h4 className="font-sans font-bold text-xs uppercase tracking-wider text-[#C5A16F]">
-                      Pocket-split Surcharge Note
+                      費用分攤提醒
                     </h4>
                   </div>
                   <p className="font-light text-xs leading-relaxed text-[#5C5446]">
-                    We welcome everybody to celebrate and enjoy together. But!
-                    If anyone would like to bring guy friends, please know that
-                    those guy friends will have to open up their own wallet and
-                    split <strong>2,000 - 3,000 NTD</strong> with the birthday
-                    boy. Even if they did not drink or participate.
+                    歡迎大家一起來慶祝、玩得開心！但如果有人想帶男性朋友來，請先知道：這些男性朋友需要自行與壽星分攤{" "}
+                    <strong>2,000 - 3,000 元台幣</strong>
+                    的費用；即使沒有喝酒或參與消費也一樣。
                   </p>
                 </m.div>
               </m.div>
@@ -333,17 +337,16 @@ export default function App() {
                         <CheckCircle className="w-12 h-12" />
                       </m.div>
                       <h2 className="font-serif text-3xl mb-3 tracking-tight">
-                        Seat Reserved!
+                        報名成功！
                       </h2>
                       <p className="text-[#5C5446] text-sm font-light max-w-sm mx-auto leading-relaxed">
-                        Your RSVP is submitted. Next, you can generate an IG
-                        invitation to share with your friends.
+                        你的 RSVP 已送出。接下來可以產生 IG 邀請圖，分享給朋友。
                       </p>
 
                       <div className="w-full max-w-sm mt-6">
                         <div className="mb-5 text-left bg-white/50 border border-[#C5A16F]/10 rounded-xl p-4">
                           <p className="text-[10px] text-[#C5A16F] font-bold uppercase tracking-widest mb-2 pb-2 border-b border-[#C5A16F]/15">
-                            Next Steps
+                            下一步
                           </p>
                           <ul className="text-[11px] sm:text-xs text-[#5C5446] space-y-2">
                             <li className="flex items-start gap-2 leading-tight">
@@ -351,8 +354,8 @@ export default function App() {
                                 3
                               </span>
                               <span>
-                                <strong>Generate IG Invite</strong> (Upload a
-                                photo if you want)
+                                <strong>產生 IG 邀請圖</strong>
+                                （想放照片也可以）
                               </span>
                             </li>
                             <li className="flex items-start gap-2 leading-tight">
@@ -360,8 +363,7 @@ export default function App() {
                                 4
                               </span>
                               <span>
-                                <strong>Download & Share</strong> to Instagram
-                                Stories
+                                <strong>下載並分享</strong>到 Instagram 限時動態
                               </span>
                             </li>
                           </ul>
@@ -375,10 +377,10 @@ export default function App() {
                       <div className="mt-8 bg-[#FAF5EE] px-5 py-3.5 rounded-2xl border border-[#C5A16F]/25 max-w-xs text-xs text-[#5C5446] font-light space-y-1">
                         <p className="font-medium text-[#1E1B15] flex items-center justify-center gap-1">
                           <FileSpreadsheet className="w-3.5 h-3.5 text-[#C5A16F]" />
-                          RSVP Submitted
+                          RSVP 已送出
                         </p>
                         <p className="text-[10px] text-[#5C5446]">
-                          Your RSVP has been sent to the guest list.
+                          你的 RSVP 已送到賓客名單。
                         </p>
                       </div>
 
@@ -386,7 +388,7 @@ export default function App() {
                         onClick={() => setSubmitSuccess(false)}
                         className="mt-8 text-xs font-semibold uppercase tracking-widest text-[#C5A16F] hover:text-[#1E1B15] hover:underline flex items-center gap-1 cursor-pointer"
                       >
-                        Modify details / Register another guest
+                        修改資料／再幫一位朋友報名
                       </button>
                     </m.div>
                   ) : (
@@ -399,7 +401,7 @@ export default function App() {
                     >
                       <div className="mb-6 border-b border-[#C5A16F]/20 pb-6">
                         <h2 className="font-serif text-3xl text-[#1E1B15] tracking-tight mb-2">
-                          Reserve Your Spot
+                          預留你的名額
                         </h2>
 
                         <div className="space-y-1.5 pt-2">
@@ -407,25 +409,25 @@ export default function App() {
                             <span className="w-4 h-4 rounded-full bg-[#1E1B15] text-[#FAF5EE] flex items-center justify-center text-[9px]">
                               1
                             </span>{" "}
-                            Fill out RSVP
+                            填寫 RSVP
                           </p>
                           <p className="text-[#5C5446] text-[11px] font-medium tracking-wide uppercase flex items-center gap-1.5">
                             <span className="w-4 h-4 rounded-full bg-[#1E1B15] text-[#FAF5EE] flex items-center justify-center text-[9px]">
                               2
                             </span>{" "}
-                            Send reservation
+                            送出報名
                           </p>
                           <p className="text-[#5C5446]/50 text-[11px] font-medium tracking-wide uppercase flex items-center gap-1.5">
                             <span className="w-4 h-4 rounded-full bg-neutral-200 text-neutral-400 flex items-center justify-center text-[9px]">
                               3
                             </span>{" "}
-                            Upload a photo if you want
+                            想放照片可以上傳
                           </p>
                           <p className="text-[#5C5446]/50 text-[11px] font-medium tracking-wide uppercase flex items-center gap-1.5">
                             <span className="w-4 h-4 rounded-full bg-neutral-200 text-neutral-400 flex items-center justify-center text-[9px]">
                               4
                             </span>{" "}
-                            Download / share IG invite
+                            下載／分享 IG 邀請圖
                           </p>
                         </div>
                       </div>
@@ -440,7 +442,7 @@ export default function App() {
                       <form onSubmit={handleRsvpSubmit} className="space-y-5">
                         {/* Hidden Honeypot Input for Bot Prevention */}
                         <div className="hidden" aria-hidden="true">
-                          <label htmlFor="website">Website</label>
+                          <label htmlFor="website">網站</label>
                           <input
                             type="text"
                             name="website"
@@ -455,7 +457,7 @@ export default function App() {
                         {/* Name Input */}
                         <div>
                           <label className="block text-xs uppercase tracking-wider text-[#5C5446] mb-1.5 font-medium">
-                            Guest Name
+                            姓名
                           </label>
                           <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C5A16F]">
@@ -466,7 +468,7 @@ export default function App() {
                               required
                               value={name}
                               onChange={(e) => setName(e.target.value)}
-                              placeholder="First & Last Name"
+                              placeholder="請輸入姓名"
                               className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white border border-[#E5DFC9] focus:outline-hidden focus:border-[#C5A16F] text-[#1E1B15] text-sm transition font-light placeholder:text-neutral-400"
                             />
                           </div>
@@ -475,7 +477,7 @@ export default function App() {
                         {/* Instagram Input */}
                         <div>
                           <label className="block text-xs uppercase tracking-wider text-[#5C5446] mb-1.5 font-medium">
-                            Instagram
+                            Instagram 帳號
                           </label>
                           <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#C5A16F]">
@@ -494,7 +496,7 @@ export default function App() {
                         {/* Gender Selection */}
                         <div className="pt-2 pb-1">
                           <label className="block text-xs uppercase tracking-wider text-[#5C5446] mb-2 font-medium">
-                            Gender
+                            性別
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <label
@@ -512,7 +514,7 @@ export default function App() {
                                 onChange={() => setGender("Female")}
                               />
                               <span className="font-medium text-sm">
-                                Female
+                                女生
                               </span>
                             </label>
 
@@ -530,7 +532,7 @@ export default function App() {
                                 checked={gender === "Male"}
                                 onChange={() => setGender("Male")}
                               />
-                              <span className="font-medium text-sm">Male</span>
+                              <span className="font-medium text-sm">男生</span>
                             </label>
                           </div>
                         </div>
@@ -538,9 +540,9 @@ export default function App() {
                         {/* Phone Input (Optional) */}
                         <div>
                           <label className="block text-xs uppercase tracking-wider text-[#5C5446] mb-1.5 font-medium">
-                            Phone Number{" "}
+                            手機號碼{" "}
                             <span className="text-neutral-400 font-normal lowercase">
-                              (Optional)
+                              （選填）
                             </span>
                           </label>
                           <div className="relative">
@@ -549,9 +551,12 @@ export default function App() {
                             </span>
                             <input
                               type="tel"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              maxLength={10}
                               value={phone}
-                              onChange={(e) => setPhone(e.target.value)}
-                              placeholder="e.g. +886 912345678"
+                              onChange={(e) => handlePhoneChange(e.target.value)}
+                              placeholder="0912345678"
                               className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white border border-[#E5DFC9] focus:outline-hidden focus:border-[#C5A16F] text-[#1E1B15] text-sm transition font-light font-mono placeholder:font-sans placeholder:text-neutral-400"
                             />
                           </div>
@@ -560,7 +565,7 @@ export default function App() {
                         {/* Selection Attendance option */}
                         <div className="pt-2 pb-1">
                           <label className="block text-xs uppercase tracking-wider text-[#5C5446] mb-2 font-medium">
-                            Attending?
+                            是否出席？
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <label
@@ -580,7 +585,7 @@ export default function App() {
                                 }}
                               />
                               <span className="font-medium text-sm">
-                                Right On
+                                會到
                               </span>
                             </label>
 
@@ -604,7 +609,7 @@ export default function App() {
                                 }}
                               />
                               <span className="font-medium text-sm">
-                                Cannot Make it
+                                不能到
                               </span>
                             </label>
                           </div>
@@ -635,7 +640,7 @@ export default function App() {
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-2">
                                 <div>
                                   <label className="block text-[11px] uppercase tracking-wider text-[#5C5446] mb-2 font-medium">
-                                    Female Plus Ones
+                                    女性朋友人數
                                   </label>
                                   <div className="flex bg-white rounded-xl border border-[#E5DFC9] overflow-hidden p-1 shadow-xs">
                                     <button
@@ -668,7 +673,7 @@ export default function App() {
 
                                 <div>
                                   <label className="block text-[11px] uppercase tracking-wider text-[#5C5446] mb-2 font-medium">
-                                    Male Plus Ones
+                                    男性朋友人數
                                   </label>
                                   <div className="flex bg-white rounded-xl border border-[#E5DFC9] overflow-hidden p-1 shadow-xs">
                                     <button
@@ -725,9 +730,8 @@ export default function App() {
                                         className="mt-1 w-4 h-4 sm:w-5 sm:h-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer flex-shrink-0"
                                       />
                                       <span className="text-[10px] sm:text-xs text-amber-900 leading-snug">
-                                        I formally swear the guy friends I
-                                        invited will split the 2,000 - 3,000 NTD
-                                        pocket-fee with the Host.
+                                        我確認我邀請的男性朋友會一起分攤
+                                        2,000 - 3,000 NTD 的費用。
                                       </span>
                                     </label>
                                   </m.div>
@@ -740,16 +744,16 @@ export default function App() {
                         {/* Any extra notes? */}
                         <div className="pt-2">
                           <label className="block text-xs uppercase tracking-wider text-[#5C5446] mb-1.5 font-medium">
-                            Extra Notes{" "}
+                            備註{" "}
                             <span className="text-neutral-400 font-normal lowercase">
-                              (Optional)
+                              （選填）
                             </span>
                           </label>
                           <textarea
                             rows={3}
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder="Allergies, cheers to the host, etc..."
+                            placeholder="過敏、飲食限制，或想給 Sam 的話..."
                             className="w-full px-4 py-3 rounded-2xl bg-white border border-[#E5DFC9] focus:outline-hidden focus:border-[#C5A16F] text-[#1E1B15] text-sm transition font-light resize-none placeholder:text-neutral-400"
                           ></textarea>
                         </div>
@@ -783,7 +787,7 @@ export default function App() {
                                 ></path>
                               </svg>
                             ) : (
-                              "Send Reservation"
+                              "送出 RSVP"
                             )}
                           </button>
                         </div>
@@ -799,9 +803,9 @@ export default function App() {
 
       {/* Footer footprint */}
       <footer className="py-8 text-center text-[10px] uppercase tracking-[0.2em] text-[#A68F72] font-semibold flex flex-col items-center gap-1.5">
-        <p>11:00 PM · Exclusive Pass</p>
+        <p>11:00 PM · 專屬邀請</p>
         <p className="font-mono text-[#D2C5B3]">
-          © {new Date().getFullYear()} RSVP Systems
+          © {new Date().getFullYear()} RSVP 系統
         </p>
       </footer>
     </div>

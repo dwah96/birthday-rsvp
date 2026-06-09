@@ -258,8 +258,8 @@ export default function InvitationGenerator() {
 
     const shareData = {
       files: [generatedResult.file],
-      title: "Sam's Invitation",
-      text: "Save this invite to Photos, then share it to Instagram.",
+      title: "Sam 的邀請圖",
+      text: "將邀請圖儲存到照片後，就可以分享到 Instagram。",
     };
 
     try {
@@ -274,7 +274,7 @@ export default function InvitationGenerator() {
 
     window.open(generatedResult.url, "_blank", "noopener,noreferrer");
     setDownloadMessage(
-      "If the image opens in a new tab, long press it and choose Save Image / Save to Photos.",
+      "如果圖片開在新分頁，請長按圖片並選擇「儲存圖片」或「加入照片」。",
     );
   };
 
@@ -292,13 +292,13 @@ export default function InvitationGenerator() {
       document.body.appendChild(link);
       link.click();
       setDownloadMessage(
-        "Download started. If nothing happens, use Share / Save to Photos or try opening the app outside preview.",
+        "下載已開始。如果沒有反應，請使用「分享／儲存到照片」，或用正式連結開啟。",
       );
     } catch (err) {
       console.error("Download failed", err);
       window.open(url, "_blank", "noopener,noreferrer");
       setDownloadMessage(
-        "If the image opens in a new tab, right click or long press it and choose Save Image.",
+        "如果圖片開在新分頁，請右鍵或長按圖片並選擇「儲存圖片」。",
       );
     } finally {
       link.remove();
@@ -308,7 +308,7 @@ export default function InvitationGenerator() {
 
   const handleGenerateGif = async () => {
     setIsGeneratingGif(true);
-    setDownloadMessage("Generating animated GIF. This might take a moment...");
+    setDownloadMessage("正在產生動態 GIF，請稍等一下...");
     try {
       // Allow browser to render the "Generating..." message
       await new Promise((r) => setTimeout(r, 50));
@@ -405,23 +405,23 @@ export default function InvitationGenerator() {
         ctx.globalAlpha = textAlpha;
 
         if (textAlpha > 0) {
-          // YOU ARE INVITED
+          // Invitation label
           setLetterSpacing("6px");
           ctx.fillStyle = "#C5A16F";
           ctx.font = "500 18px sans-serif";
-          ctx.fillText("YOU ARE INVITED", width / 2, startY + yOffset);
+          ctx.fillText("誠摯邀請", width / 2, startY + yOffset);
 
-          // Sam's
+          // Sam title
           setLetterSpacing("-1px");
           ctx.fillStyle = "#1E1B15";
           ctx.font = "300 96px serif";
-          ctx.fillText("Sam's", width / 2, startY + 100 + yOffset);
+          ctx.fillText("Sam 的", width / 2, startY + 100 + yOffset);
 
-          // 22歲的10週年紀念日
+          // Birthday line
           setLetterSpacing("2px");
           ctx.fillStyle = "#C5A16F";
           ctx.font = "400 48px sans-serif";
-          ctx.fillText("22歲的10週年紀念日", width / 2, startY + 180 + yOffset);
+          ctx.fillText("22 歲的 10 週年紀念日", width / 2, startY + 180 + yOffset);
 
           // Line
           ctx.strokeStyle = "rgba(197, 161, 111, 0.3)";
@@ -431,23 +431,23 @@ export default function InvitationGenerator() {
           ctx.lineTo(500, startY + 240 + yOffset);
           ctx.stroke();
 
-          // Date Header
+          // Date header
           setLetterSpacing("3px");
           ctx.fillStyle = "#C5A16F";
           ctx.font = "600 22px serif";
-          ctx.fillText("DATE", width / 2, startY + 300 + yOffset);
+          ctx.fillText("日期", width / 2, startY + 300 + yOffset);
 
-          // Date Value
+          // Date value
           setLetterSpacing("0px");
           ctx.fillStyle = "#1E1B15";
           ctx.font = "500 28px sans-serif";
-          ctx.fillText("Friday, July 17", width / 2, startY + 335 + yOffset);
+          ctx.fillText("7 月 17 日（星期五）", width / 2, startY + 335 + yOffset);
 
-          // Venue Header
+          // Venue header
           setLetterSpacing("3px");
           ctx.fillStyle = "#C5A16F";
           ctx.font = "600 22px serif";
-          ctx.fillText("VENUE", width / 2, startY + 400 + yOffset);
+          ctx.fillText("地點", width / 2, startY + 400 + yOffset);
 
           // Venue Value
           setLetterSpacing("0px");
@@ -479,11 +479,11 @@ export default function InvitationGenerator() {
       const url = URL.createObjectURL(blob);
       
       setGeneratedResult({ url, file, type: "gif" });
-      setDownloadMessage("Your GIF is ready. On mobile, tap Share / Save to Photos.");
+      setDownloadMessage("GIF 已準備好。手機請點「分享／儲存到照片」。");
       setIsGeneratingGif(false);
     } catch (err) {
       console.error("Failed to generate GIF", err);
-      setDownloadMessage("Error generating GIF. Please try again.");
+      setDownloadMessage("產生 GIF 時發生錯誤，請再試一次。");
       setIsGeneratingGif(false);
     }
   };
@@ -568,23 +568,23 @@ export default function InvitationGenerator() {
         }
       };
 
-      // YOU ARE INVITED
+      // Invitation label
       setLetterSpacing("8px");
       ctx.fillStyle = "#C5A16F";
       ctx.font = "500 28px sans-serif";
-      ctx.fillText("YOU ARE INVITED", 540, startY);
+      ctx.fillText("誠摯邀請", 540, startY);
 
-      // Sam's
+      // Sam title
       setLetterSpacing("-2px");
       ctx.fillStyle = "#1E1B15";
       ctx.font = "300 144px serif";
-      ctx.fillText("Sam's", 540, startY + 150);
+      ctx.fillText("Sam 的", 540, startY + 150);
 
-      // 22歲的10週年紀念日
+      // Birthday line
       setLetterSpacing("3px");
       ctx.fillStyle = "#C5A16F";
       ctx.font = "400 72px sans-serif";
-      ctx.fillText("22歲的10週年紀念日", 540, startY + 270);
+      ctx.fillText("22 歲的 10 週年紀念日", 540, startY + 270);
 
       // Line
       ctx.strokeStyle = "rgba(197, 161, 111, 0.3)";
@@ -594,23 +594,23 @@ export default function InvitationGenerator() {
       ctx.lineTo(740, startY + 360);
       ctx.stroke();
 
-      // Date Header
+      // Date header
       setLetterSpacing("4px");
       ctx.fillStyle = "#C5A16F";
       ctx.font = "600 34px serif";
-      ctx.fillText("DATE", 540, startY + 450);
+      ctx.fillText("日期", 540, startY + 450);
 
-      // Date Value
+      // Date value
       setLetterSpacing("0px");
       ctx.fillStyle = "#1E1B15";
       ctx.font = "500 44px sans-serif";
-      ctx.fillText("Friday, July 17", 540, startY + 500);
+      ctx.fillText("7 月 17 日（星期五）", 540, startY + 500);
 
-      // Venue Header
+      // Venue header
       setLetterSpacing("4px");
       ctx.fillStyle = "#C5A16F";
       ctx.font = "600 34px serif";
-      ctx.fillText("VENUE", 540, startY + 600);
+      ctx.fillText("地點", 540, startY + 600);
 
       // Venue Value
       setLetterSpacing("0px");
@@ -630,7 +630,7 @@ export default function InvitationGenerator() {
         const url = URL.createObjectURL(blob);
         
         setGeneratedResult({ url, file, type: "png" });
-        setDownloadMessage("Your PNG is ready. On mobile, tap Share / Save to Photos.");
+        setDownloadMessage("PNG 已準備好。手機請點「分享／儲存到照片」。");
         setIsGenerating(false);
       }, "image/png");
     } catch (err) {
@@ -646,7 +646,7 @@ export default function InvitationGenerator() {
         className="w-full flex items-center justify-center gap-2 bg-[#FAF5EE] text-[#C5A16F] border border-[#C5A16F]/30 rounded-2xl py-4 sm:py-5 font-bold tracking-widest uppercase text-xs sm:text-sm hover:bg-[#F2ECD9] active:scale-[0.99] transition duration-300 shadow-sm cursor-pointer mt-4"
       >
         <Download className="w-5 h-5" />
-        Generate IG Invitation
+        產生 IG 邀請圖
       </button>
 
       <AnimatePresence>
@@ -671,18 +671,17 @@ export default function InvitationGenerator() {
               </button>
 
               <h3 className="font-serif text-2xl text-center text-[#1E1B15] mb-2 pr-8 pl-8 mt-2">
-                Your Invitation
+                你的邀請圖
               </h3>
               <p className="text-center text-xs text-[#5C5446] mb-6">
-                Preview your IG Story invitation. Give it a final double-check
-                before downloading.
+                預覽你的 IG 限時動態邀請圖，下載前可以再確認一次。
               </p>
 
               {/* Photo Upload Section */}
               <div className="flex flex-col items-center mb-4">
                 <label className="cursor-pointer bg-white border border-[#E5DFC9] text-[#5C5446] text-xs px-5 py-2.5 rounded-xl shadow-sm hover:bg-[#FAF5EE] transition mb-3">
                   <span className="font-medium tracking-wide">
-                    Upload Custom Photo (Optional)
+                    上傳自己的照片（選填）
                   </span>
                   <input
                     type="file"
@@ -695,7 +694,7 @@ export default function InvitationGenerator() {
                 {customImage && (
                   <div className="w-full flex flex-col items-center gap-1.5 mt-1 mb-2">
                     <p className="text-[10px] text-center text-[#5C5446] italic mb-1">
-                      Drag to reposition. Pinch or scroll to zoom.
+                      拖曳照片調整位置。手機可雙指縮放，電腦可用滑鼠滾輪縮放。
                     </p>
                     <div className="flex items-center gap-2">
                       <button
@@ -715,7 +714,7 @@ export default function InvitationGenerator() {
                         }
                         className="text-[9px] uppercase tracking-widest px-4 py-1.5 bg-[#FAF5EE] border border-[#C5A16F]/20 rounded-full text-[#5C5446] hover:bg-[#F2ECD9] transition flex items-center justify-center active:scale-95"
                       >
-                        Reset Photo
+                        重設照片
                       </button>
                       <button
                         onClick={() => updateCropConfig((c) => ({ ...c, zoom: c.zoom + 0.1 }))}
@@ -766,7 +765,7 @@ export default function InvitationGenerator() {
                     >
                       <img
                         src={currentImageSrc}
-                        alt="Invitation Graphic"
+                        alt="邀請圖照片"
                         crossOrigin="anonymous"
                         draggable={false}
                         className="opacity-90 max-w-none origin-top-left pointer-events-none"
@@ -793,7 +792,7 @@ export default function InvitationGenerator() {
                     imageError && (
                       <div className="w-full py-6 flex items-center justify-center bg-[#FAF5EE] border-b border-[#C5A16F]/20">
                         <p className="text-xs text-[#C5A16F]">
-                          Host photo is missing
+                          照片載入失敗
                         </p>
                       </div>
                     )
@@ -806,13 +805,13 @@ export default function InvitationGenerator() {
                     className={`flex-1 flex flex-col items-center z-20 relative bg-[#FAF5EE] px-8 ${!imageError && imageLoaded ? "justify-start pt-2" : "justify-center py-6"}`}
                   >
                     <div className="uppercase tracking-widest text-[8px] text-[#C5A16F] font-sans font-medium mb-3">
-                      You Are Invited
+                      誠摯邀請
                     </div>
 
                     <h1 className="font-serif text-[42px] leading-[1.1] text-[#1E1B15] tracking-tight font-light mb-1">
-                      Sam's
+                      Sam 的
                       <span className="font-sans font-normal text-[#C5A16F] tracking-tight block mt-1 text-2xl">
-                        22歲的10週年紀念日
+                        22 歲的 10 週年紀念日
                       </span>
                     </h1>
 
@@ -821,16 +820,16 @@ export default function InvitationGenerator() {
                     <div className="flex flex-col items-center space-y-3 mt-1">
                       <div>
                         <p className="font-serif text-[#C5A16F] text-[10px] tracking-widest uppercase font-semibold">
-                          Date
+                          日期
                         </p>
                         <p className="text-[#1E1B15] text-[13px] font-medium mt-0.5">
-                          Friday, July 17
+                          7 月 17 日（星期五）
                         </p>
                       </div>
 
                       <div>
                         <p className="font-serif text-[#C5A16F] text-[10px] tracking-widest uppercase font-semibold">
-                          Venue
+                          地點
                         </p>
                         <p className="text-[#1E1B15] text-[13px] font-medium mt-0.5">
                           Barcode Taipei
@@ -849,7 +848,7 @@ export default function InvitationGenerator() {
                       className="w-full bg-[#C5A16F] text-white rounded-2xl py-3.5 font-bold tracking-widest uppercase text-xs shadow-sm hover:bg-[#b08d5b] transition flex items-center justify-center gap-2"
                     >
                       <Share2 className="w-4 h-4" />
-                      Share / Save to Photos
+                      分享／儲存到照片
                     </button>
                     <button
                       type="button"
@@ -857,18 +856,17 @@ export default function InvitationGenerator() {
                       className="w-full bg-[#1E1B15] text-[#FAF5EE] rounded-2xl py-3.5 font-bold tracking-widest uppercase text-xs text-center flex items-center justify-center gap-2 hover:bg-neutral-800 transition shadow-sm"
                     >
                       <Download className="w-4 h-4" />
-                      Download {generatedResult.type.toUpperCase()}
+                      下載 {generatedResult.type.toUpperCase()}
                     </button>
                     <button
                       onClick={() => setGeneratedResult(null)}
                       className="text-xs text-[#5C5446] underline mt-1 mx-auto py-2"
                     >
-                      Back to Editor
+                      回到編輯
                     </button>
                     <div className="mt-1 text-center px-4 py-3 bg-[#E5DFC9]/20 rounded-xl border border-[#C5A16F]/10">
                       <p className="text-[11px] text-[#5C5446] leading-relaxed">
-                        If saving opens a new tab, long press the image to save.
-                        On iPhone, choose Save Image / Save to Photos from the share menu.
+                        如果儲存時開啟新分頁，請長按圖片並儲存。iPhone 請在分享選單中選擇「儲存圖片」或「加入照片」。
                       </p>
                     </div>
                   </div>
@@ -882,12 +880,12 @@ export default function InvitationGenerator() {
                       {isGenerating ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          Generating PNG...
+                          正在產生 PNG...
                         </>
                       ) : (
                         <>
                           <Download className="w-4 h-4" />
-                          Download Static PNG
+                          下載靜態 PNG
                         </>
                       )}
                     </button>
@@ -900,12 +898,12 @@ export default function InvitationGenerator() {
                       {isGeneratingGif ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          Generating GIF...
+                          正在產生 GIF...
                         </>
                       ) : (
                         <>
                           <ImagePlay className="w-4 h-4" />
-                          Download Animated GIF
+                          下載動態 GIF
                         </>
                       )}
                     </button>

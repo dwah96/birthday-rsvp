@@ -6,7 +6,7 @@ function doPost(e) {
     } catch (err) {
       return ContentService.createTextOutput(JSON.stringify({ 
         ok: false, 
-        message: "Invalid JSON format." 
+        message: "資料格式錯誤，請重新送出。"
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -14,7 +14,7 @@ function doPost(e) {
     if (data.eventKey !== EXPECTED_KEY) {
       return ContentService.createTextOutput(JSON.stringify({ 
         ok: false, 
-        message: "Invalid event key." 
+        message: "驗證失敗，請使用正式邀請連結。"
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -24,13 +24,20 @@ function doPost(e) {
 
     var guestName = data.guestName || "";
     var instagram = data.instagram || "";
-    var phone = data.phone || "";
+    var phone = String(data.phone || "").trim();
     var gender = data.gender || "";
     var attending = data.attendingStatus === "yes" ? "Going" : "Not going";
     var femalePlusOnes = parseInt(data.femalePlusOnes, 10) || 0;
     var malePlusOnes = parseInt(data.malePlusOnes, 10) || 0;
     var notes = data.notes || "";
     var timestamp = data.timestamp || new Date().toISOString();
+
+    if (phone && !/^\d{10}$/.test(phone)) {
+      return ContentService.createTextOutput(JSON.stringify({
+        ok: false,
+        message: "手機號碼需為 10 位數字。"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -110,13 +117,13 @@ function doPost(e) {
 
     return ContentService.createTextOutput(JSON.stringify({ 
       ok: true,
-      message: "RSVP appended successfully." 
+      message: "RSVP 已成功送出。"
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ 
       ok: false, 
-      message: "Server script error: " + error.toString() 
+      message: "伺服器錯誤：" + error.toString()
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }

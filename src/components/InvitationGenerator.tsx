@@ -278,6 +278,34 @@ export default function InvitationGenerator() {
     );
   };
 
+  const handleDirectDownload = () => {
+    if (!generatedResult) return;
+
+    const url = URL.createObjectURL(generatedResult.file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = generatedResult.file.name;
+    link.rel = "noopener";
+    link.style.display = "none";
+
+    try {
+      document.body.appendChild(link);
+      link.click();
+      setDownloadMessage(
+        "Download started. If nothing happens, use Share / Save to Photos or try opening the app outside preview.",
+      );
+    } catch (err) {
+      console.error("Download failed", err);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setDownloadMessage(
+        "If the image opens in a new tab, right click or long press it and choose Save Image.",
+      );
+    } finally {
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+  };
+
   const handleGenerateGif = async () => {
     setIsGeneratingGif(true);
     setDownloadMessage("Generating animated GIF. This might take a moment...");
@@ -823,14 +851,14 @@ export default function InvitationGenerator() {
                       <Share2 className="w-4 h-4" />
                       Share / Save to Photos
                     </button>
-                    <a
-                      href={generatedResult.url}
-                      download={generatedResult.file.name}
+                    <button
+                      type="button"
+                      onClick={handleDirectDownload}
                       className="w-full bg-[#1E1B15] text-[#FAF5EE] rounded-2xl py-3.5 font-bold tracking-widest uppercase text-xs text-center flex items-center justify-center gap-2 hover:bg-neutral-800 transition shadow-sm"
                     >
                       <Download className="w-4 h-4" />
                       Download {generatedResult.type.toUpperCase()}
-                    </a>
+                    </button>
                     <button
                       onClick={() => setGeneratedResult(null)}
                       className="text-xs text-[#5C5446] underline mt-1 mx-auto py-2"

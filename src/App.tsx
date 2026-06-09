@@ -15,7 +15,7 @@ import InvitationGenerator from "./components/InvitationGenerator";
 
 const RSVP_CONFIG = {
   appsScriptUrl:
-    "https://script.google.com/macros/s/AKfycbwB78a1EIrf0IVC1QzmSvdR6TQ8xNIrHybLTTr5Iu6goU7SS9mKsvylx-E-5uhk9cg/exec",
+    "https://script.google.com/macros/s/AKfycbzhsvFp-KWSu_2Imfn5iEiU5fV2o88hC6kuG0wDLGmecsXuKEMIQsMz8fadWR1D_oUO/exec",
   eventKey: "sam-birthday-2026-private-key",
 };
 
